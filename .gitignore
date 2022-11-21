@@ -2,3 +2,5 @@ downloads/*
 Not_Singapore_downloads/*
 dataset/*
 __pycache__/*
+images_for_testing/*
+tmp/*
