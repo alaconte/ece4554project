@@ -1,6 +1,7 @@
 import tensorflow as tf
 from tensorflow.data import AUTOTUNE
 from tensorflow.keras.callbacks import EarlyStopping
+from tensorflow.keras.optimizers import RMSprop
 from sklearn.model_selection import train_test_split
 import cv2
 import os
@@ -38,21 +39,22 @@ num_classes = 2
 
 model = tf.keras.Sequential([
     tf.keras.layers.Rescaling(1./255),
+    tf.keras.layers.Input(shape=(resize_height, resize_width, 3)),
+    tf.keras.layers.Conv2D(16, 3, activation='relu'),
+    tf.keras.layers.MaxPooling2D(2),
     tf.keras.layers.Conv2D(32, 3, activation='relu'),
-    tf.keras.layers.MaxPooling2D(),
-    tf.keras.layers.Conv2D(32, 3, activation='relu'),
-    tf.keras.layers.MaxPooling2D(),
-    tf.keras.layers.Conv2D(32, 3, activation='relu'),
-    tf.keras.layers.MaxPooling2D(),
+    tf.keras.layers.MaxPooling2D(2),
+    tf.keras.layers.Conv2D(64, 3, activation='relu'),
+    tf.keras.layers.MaxPooling2D(2),
     tf.keras.layers.Flatten(),
-    tf.keras.layers.Dense(128, activation='relu'),
-    tf.keras.layers.Dense(num_classes)
+    tf.keras.layers.Dense(1024, activation='relu'),
+    tf.keras.layers.Dense(1, activation='sigmoid')
 ])
 
 model.compile(
-    optimizer='adam',
-    loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
-    metrics=['accuracy'])
+    optimizer=RMSprop(lr=0.001),
+    loss='binary_crossentropy',
+    metrics=['acc'])
 
 checkpoint_filepath = './tmp/checkpoint'
 model_checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
@@ -74,5 +76,5 @@ history = model.fit(train_ds, epochs=600,
 model.save("model.h5")
 
 metrics_df = pd.DataFrame(history.history)
-metrics_df[["loss","val_loss", "accuracy"]].plot()
+metrics_df[["loss","val_loss", "acc", "val_acc"]].plot()
 plt.show()

@@ -1,6 +1,7 @@
 import cv2
 import os
 from multiprocessing import Pool
+from random import shuffle
 import time
 from preprocess import preprocess_img
 
@@ -25,6 +26,12 @@ class DataGen():
             self.curr_dir = dir
             self.curr_save_dir = save_dir
             filenames = os.listdir(dir)
+
+            # limit amount of files to process so number in each
+            # category is the same
+            shuffle(filenames)
+            filenames = filenames[:2095]
+
             print(f"Processing {len(filenames)} in directory: ")
             print(dir + "\n")
             filenames = [dir + file for file in filenames]
