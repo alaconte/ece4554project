@@ -3,6 +3,7 @@ import os
 from preprocess import preprocess_img
 import cv2
 
+#os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
 saved_model = tf.keras.models.load_model("model.h5")
 
 # i put images that i just screenshotted from streetview in here
@@ -10,6 +11,7 @@ test_dirs = ["./images_for_testing/singapore" , "./images_for_testing/not_singap
 
 count = 0
 correct = 0
+singapore_guesses = 0
 for test_dir in test_dirs:
     # determine whether test files are from singapore based on directory
     from_singapore = (test_dir == test_dirs[0])
@@ -29,19 +31,23 @@ for test_dir in test_dirs:
         # and the likelihood it is from singapore
         # compare these values to determine what category is selected by the model
         pred_from_singapore = predicted[0][0] > .5
+        if pred_from_singapore:
+            singapore_guesses += 1
         confidence = (predicted[0][0] if pred_from_singapore else 1 - predicted[0][0])*100
 
         # display filename and results
-        print(f"prediction {predicted}")
-        print(f"File: {filename}")
-        print(f"From Singapore: {from_singapore}")
-        print(f"Predicted: {pred_from_singapore}")
-        print(f"Confidence: {confidence:.2f}%")
+        # print(f"prediction {predicted}")
+        # print(f"File: {filename}")
+        # print(f"From Singapore: {from_singapore}")
+        # print(f"Predicted: {pred_from_singapore}")
+        # print(f"Confidence: {confidence:.2f}%")
         if pred_from_singapore == from_singapore:
-            print("Prediction was correct")
+            # print("Prediction was correct")
             correct += 1
         else:
-            print("Prediction was incorrect")
-        _ = input("...enter to continue...")
+            # print("Prediction was incorrect")
+            pass
+        # _ = input("...enter to continue...")
         print()
     print(f"Overall accuracy: {((correct/count)*100):.2f}")
+    print(f"Guesses for Singapore: {((singapore_guesses/count)*100):.2f}")

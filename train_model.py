@@ -12,7 +12,8 @@ import numpy as np
 from preprocess import resize_width, resize_height
 
 data_dir = './dataset/'
-batch_size = 32
+val_dir = './validation/'
+batch_size = 8
 
 # train_ds = tf.keras.utils.image_dataset_from_directory(
 #     data_dir,
@@ -32,8 +33,7 @@ batch_size = 32
 
 AUTOTUNE = tf.data.AUTOTUNE
 
-datagen = ImageDataGenerator(horizontal_flip=True, zoom_range=(1, 1.5),
-                                    validation_split=0.2)
+datagen = ImageDataGenerator(horizontal_flip=True, zoom_range=(1, 1.5))
 
 train_generator = datagen.flow_from_directory(
         data_dir, 
@@ -42,26 +42,31 @@ train_generator = datagen.flow_from_directory(
         subset="training",
         class_mode='binary')
 
-val_generator = datagen.flow_from_directory(
-        data_dir, 
+datagen2 = ImageDataGenerator()
+val_generator = datagen2.flow_from_directory(
+        val_dir, 
         target_size=(resize_width, resize_height), 
         batch_size=batch_size,
         subset="validation",
-        class_mode='binary')
+        class_mode='binary',
+        shuffle = False)
 
 # train_ds = train_ds.cache().prefetch(buffer_size=AUTOTUNE)
 # val_ds = val_ds.cache().prefetch(buffer_size=AUTOTUNE)
 
 model = tf.keras.Sequential([
     tf.keras.layers.Rescaling(1./255, input_shape=(resize_height, resize_width, 3)),
-    tf.keras.layers.Conv2D(16, 3, activation='relu'),
+    tf.keras.layers.Conv2D(32, (5, 5), activation='relu'),
     tf.keras.layers.MaxPooling2D(2),
-    tf.keras.layers.Conv2D(32, 3, activation='relu'),
+    tf.keras.layers.Conv2D(64, (5, 5), activation='relu'),
     tf.keras.layers.MaxPooling2D(2),
-    tf.keras.layers.Conv2D(64, 3, activation='relu'),
+    tf.keras.layers.Conv2D(128, (5, 5), activation='relu'),
     tf.keras.layers.MaxPooling2D(2),
     tf.keras.layers.Flatten(),
-    tf.keras.layers.Dense(1024, activation='relu'),
+    tf.keras.layers.Dense(512, activation='relu'),
+    tf.keras.layers.Dropout(0.25),
+    tf.keras.layers.Dense(512, activation='relu'),
+    tf.keras.layers.Dropout(0.1),
     tf.keras.layers.Dense(1, activation='sigmoid')
 ])
 
@@ -79,7 +84,7 @@ model_checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
     save_best_only=True)
 
 callbacks = [
-    EarlyStopping(patience=4),
+    EarlyStopping(patience=2),
     model_checkpoint_callback,
 ]
 
