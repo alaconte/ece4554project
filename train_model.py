@@ -15,24 +15,9 @@ data_dir = './dataset/'
 val_dir = './validation/'
 batch_size = 8
 
-# train_ds = tf.keras.utils.image_dataset_from_directory(
-#     data_dir,
-#     validation_split=0.2,
-#     subset="training",
-#     seed=123,
-#     image_size=(resize_height, resize_width),
-#     batch_size=batch_size)
-
-# val_ds = tf.keras.utils.image_dataset_from_directory(
-#   data_dir,
-#   validation_split=0.2,
-#   subset="validation",
-#   seed=123,
-#   image_size=(resize_height, resize_width),
-#   batch_size=batch_size)
-
 AUTOTUNE = tf.data.AUTOTUNE
 
+# set up data generators for data augmentation
 datagen = ImageDataGenerator(horizontal_flip=True, zoom_range=(1, 1.5))
 
 train_generator = datagen.flow_from_directory(
@@ -51,9 +36,7 @@ val_generator = datagen2.flow_from_directory(
         class_mode='binary',
         shuffle = False)
 
-# train_ds = train_ds.cache().prefetch(buffer_size=AUTOTUNE)
-# val_ds = val_ds.cache().prefetch(buffer_size=AUTOTUNE)
-
+# set up model structure
 model = tf.keras.Sequential([
     tf.keras.layers.Rescaling(1./255, input_shape=(resize_height, resize_width, 3)),
     tf.keras.layers.Conv2D(32, (5, 5), activation='relu'),
@@ -88,16 +71,13 @@ callbacks = [
     model_checkpoint_callback,
 ]
 
-# history = model.fit(train_ds, epochs=600,
-#                     validation_data=val_ds,
-#                     callbacks=callbacks)
-
 history = model.fit(train_generator, epochs=600,
                     callbacks=callbacks,
                     validation_data=val_generator)
 
 model.save("model.h5")
 
+# plot metrics
 metrics_df = pd.DataFrame(history.history)
 metrics_df[["loss","val_loss", "acc", "val_acc"]].plot()
 plt.show()

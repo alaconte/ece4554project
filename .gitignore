@@ -5,3 +5,4 @@ validation/*
 __pycache__/*
 images_for_testing/*
 tmp/*
+model.h5
