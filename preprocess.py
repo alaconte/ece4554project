@@ -6,10 +6,8 @@ resize_width, resize_height = 240, 240 # TODO: test performance of different sca
 def preprocess_img(path):
     img = cv2.imread(path)
 
-    # we will need to test and change our preprocessing approach
-    # this is just here as a placeholder
     img_hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-    smoothed = cv2.GaussianBlur(img_hsv, ksize=(0,0), sigmaX=1.5, sigmaY=1.5)
+    smoothed = cv2.GaussianBlur(img_hsv, ksize=(3,3), sigmaX=1.5, sigmaY=1.5)
 
     dim = (resize_width, resize_height) # subject to change
 
